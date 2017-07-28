@@ -153,7 +153,7 @@ _CONV_DEFS = [
 class Mobilenet_SSD_Traffic(object):
     default_params = SSDParams(
         img_shape=(448, 448),
-        num_classes=10,
+        num_classes=7,
         no_annotation_label=0,
         feat_layers=['Conv2d_5_pointwise', 'Conv2d_8_pointwise', 'Conv2d_11_pointwise', 'Conv2d_13_pointwise'],
         feat_shapes=[(56, 56), (28, 28), (28, 28), (14, 14)],

@@ -133,7 +133,7 @@ tf.app.flags.DEFINE_float(
 tf.app.flags.DEFINE_string(
     'dataset_name', 'lisa', 'The name of the dataset to load.')
 tf.app.flags.DEFINE_integer(
-    'num_classes', 10, 'Number of classes to use in the dataset.')
+    'num_classes', 7, 'Number of classes to use in the dataset.')
 tf.app.flags.DEFINE_string(
     'dataset_split_name', 'train', 'The name of the train/test split.')
 tf.app.flags.DEFINE_string(
@@ -194,7 +194,7 @@ def main(_):
         global_step = slim.create_global_step()
         # ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs/checkpoint'))
         #os.path.dirname('./logs/')
-        ckpt_filename = os.path.dirname('./logs/') + '/mobilenet_v1_1.0_224.ckpt'
+        ckpt_filename = os.path.dirname('./logs_obj/') + '/mobilenet_v1_1.0_224.ckpt'
         sess = tf.InteractiveSession()
 
         # Select the dataset.

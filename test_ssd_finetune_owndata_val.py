@@ -21,7 +21,8 @@ from nets import mobilenet_pretrained_owndata
 from preprocessing import ssd_vgg_preprocessing
 from notebooks import visualization
 
-TRAFFIC_LABELS = ["None", "Stopline", "Crosswalk", "Green", "Yellow", "Red", "Leftgo", "Rightgo", "Middlego", "Unknown"]
+# TRAFFIC_LABELS = ["None", "Stopline", "Crosswalk", "Green", "Yellow", "Red", "Leftgo", "Rightgo", "Middlego", "Unknown"]
+TRAFFIC_LABELS = ["None", "Stopline", "Crosswalk", "Green", "Yellow", "Red", "Unknown"]
 step_index = 0
 
 # TensorFlow session: grow memory when needed. TF, DO NOT USE ALL MY GPU MEMORY!!!
@@ -94,7 +95,7 @@ def process_image(img, select_threshold=0.35, nms_threshold=.45, net_shape=(1024
     # Get classes and bboxes from the net outputs.
     rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(
             rpredictions, rlocalisations, ssd_anchors,
-            select_threshold=select_threshold, img_shape=net_shape, num_classes=10, decode=True)
+            select_threshold=select_threshold, img_shape=net_shape, num_classes=7, decode=True)
 
     rbboxes = np_methods.bboxes_clip(rbbox_img, rbboxes)
     rclasses, rscores, rbboxes = np_methods.bboxes_sort(rclasses, rscores, rbboxes, top_k=400)
