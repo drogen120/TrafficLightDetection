@@ -539,7 +539,23 @@ def mobilenet_ssd_traffic_net(inputs,
             with tf.variable_scope('Box'):
                 for i, layer in enumerate(feat_layers):
                     with tf.variable_scope(layer + '_box'):
-                        p, l, o = ssd_multibox_layer(end_points[layer],
+                        if i < len(feat_layers) -1 :
+                            layer_ = feat_layers[i+1]
+                            up_shape = tf.shape(end_points[layer])
+
+                            future_feature = tf.image.resize_bilinear(end_points[layer_],
+                            [up_shape[1],up_shape[2]])
+                            future_feature = slim.conv2d(future_feature,
+                            tf.shape(end_points[layer])[3],[1,1],stride = 1)
+
+                            redudent_feature = tf.add(end_points[layer],future_feature)
+                            p, l,o = ssd_multibox_layer(redudent_feature,
+                                                      num_classes,
+                                                      anchor_sizes[i],
+                                                      anchor_ratios[i],
+                                                      normalizations[i])
+                        else :
+                            p, l, o = ssd_multibox_layer(end_points[layer],
                                                   num_classes,
                                                   anchor_sizes[i],
                                                   anchor_ratios[i],
