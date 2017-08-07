@@ -31,7 +31,7 @@ config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
 isess = tf.InteractiveSession(config=config)
 
 # Input placeholder.
-net_shape = (448, 448)
+net_shape = (440, 440)
 data_format = 'NHWC'
 img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
 # Evaluation pre-processing: resize to SSD net shape.

@@ -173,8 +173,8 @@ class Mobilenet_SSD_Traffic(object):
         #             (16., 34.),
         #             (28., 52.),
         #             (36., 70.)],
-        anchor_sizes=[(10., 18.),
-                    (18., 32.),
+        anchor_sizes=[(10., 16.),
+                    (18., 30.),
                     (28., 52.),
                     (36., 70.)],
 
@@ -553,7 +553,7 @@ def mobilenet_ssd_traffic_net(inputs,
 
     return predictions, localisations, logits, objpredictions, end_points
 
-mobilenet_ssd_traffic_net.default_image_size = 448
+mobilenet_ssd_traffic_net.default_image_size = 440
 
 def mobilenet_ssd_traffic_arg_scope(is_training=True,
                            weight_decay=0.00004,
@@ -697,7 +697,7 @@ def ssd_anchor_one_layer(img_shape,
     w[0] = sizes[1] / img_shape[1]
 
     h[1] = sizes[0] / img_shape[0] * 1.2
-    w[1] = sizes[1] / img_shape[1] * 4.0
+    w[1] = sizes[1] / img_shape[1] * 3.5
 
     di = 2
 

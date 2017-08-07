@@ -152,11 +152,11 @@ _CONV_DEFS = [
 ]
 class Mobilenet_SSD_Traffic(object):
     default_params = SSDParams(
-        img_shape=(448, 448),
+        img_shape=(440, 440),
         num_classes=7,
         no_annotation_label=0,
         feat_layers=['Conv2d_5_pointwise', 'Conv2d_8_pointwise', 'Conv2d_11_pointwise', 'Conv2d_13_pointwise'],
-        feat_shapes=[(56, 56), (28, 28), (28, 28), (14, 14)],
+        feat_shapes=[(55, 55), (28, 28), (28, 28), (14, 14)],
         # feat_layers=['block7', 'block8', 'block9', 'block10', 'block11'],
         # feat_shapes=[(19, 19), (10, 10), (5, 5), (3, 3), (1, 1)],
         anchor_size_bounds=[0.01, 0.4],
@@ -173,9 +173,9 @@ class Mobilenet_SSD_Traffic(object):
         #             (22., 46.),
         #             (28., 52.),
         #             (36., 70.)],
-        anchor_sizes=[(12., 24.),
-                    (20., 40.),
-                    (28., 56.),
+        anchor_sizes=[(10., 18.),
+                    (18., 32.),
+                    (28., 52.),
                     (36., 70.)],
 
         # anchor_sizes=[(30., 60.),
@@ -557,7 +557,7 @@ def mobilenet_ssd_traffic_net(inputs,
 
     return predictions, localisations, logits, end_points
 
-mobilenet_ssd_traffic_net.default_image_size = 448
+mobilenet_ssd_traffic_net.default_image_size = 440
 
 def mobilenet_ssd_traffic_arg_scope(is_training=True,
                            weight_decay=0.00004,
@@ -700,7 +700,7 @@ def ssd_anchor_one_layer(img_shape,
     h[0] = sizes[0] / img_shape[0]
     w[0] = sizes[1] / img_shape[1]
 
-    h[1] = sizes[0] / img_shape[0]
+    h[1] = sizes[0] / img_shape[0] * 1.2
     w[1] = sizes[1] / img_shape[1] * 4.0
 
     di = 2

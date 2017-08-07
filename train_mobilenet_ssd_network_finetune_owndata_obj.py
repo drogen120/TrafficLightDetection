@@ -192,7 +192,7 @@ def main(_):
         # Create global_step.
         # with tf.device('/gpu:0'):
         global_step = slim.create_global_step()
-        # ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs/checkpoint'))
+        # ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs_obj/checkpoint'))
         #os.path.dirname('./logs/')
         ckpt_filename = os.path.dirname('./logs_obj/') + '/mobilenet_v1_1.0_224.ckpt'
         sess = tf.InteractiveSession()
@@ -380,7 +380,6 @@ def main(_):
         config = tf.ConfigProto(log_device_placement=False,
                                 gpu_options = gpu_options)
 
-        #variables_to_exclude = slim.get_variables_by_suffix("Adam")
 
         variables_to_restore = slim.get_variables_to_restore(exclude=["MobilenetV1/Logits","MobilenetV1/Box","global_step"])
 

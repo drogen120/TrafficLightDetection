@@ -120,7 +120,8 @@ def draw_results(img, rclasses, rscores, rbboxes, index, img_name):
         ymax = int(rbboxes[i, 2] * height)
         xmax = int(rbboxes[i, 3] * width)
         cv2.rectangle(img, (xmin, ymin), (xmax, ymax), (0, 0, 255), thickness=2)
-        cv2.putText(img, str(rclasses[i]) + ' ' +str(rscores[i]), (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+        # cv2.putText(img, str(rclasses[i]) + ' ' +str(rscores[i]), (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+        cv2.putText(img, TRAFFIC_LABELS[rclasses[i]], (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
         filename = result_path + "comp4_det_test_" + TRAFFIC_LABELS[rclasses[i]]+ ".txt"
         with open(filename, 'a') as resultfile:
             resultfile.write(img_name.split('.')[0] + " " + '%.6f' % rscores[i] + " " + '%.6f' % xmin + " " + '%.6f' % ymin \

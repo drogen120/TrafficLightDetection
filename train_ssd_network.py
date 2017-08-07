@@ -132,7 +132,7 @@ tf.app.flags.DEFINE_float(
 tf.app.flags.DEFINE_string(
     'dataset_name', 'lisa', 'The name of the dataset to load.')
 tf.app.flags.DEFINE_integer(
-    'num_classes', 8, 'Number of classes to use in the dataset.')
+    'num_classes', 7, 'Number of classes to use in the dataset.')
 tf.app.flags.DEFINE_string(
     'dataset_split_name', 'train', 'The name of the train/test split.')
 tf.app.flags.DEFINE_string(
