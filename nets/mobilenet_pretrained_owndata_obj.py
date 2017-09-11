@@ -157,33 +157,12 @@ class Mobilenet_SSD_Traffic(object):
         no_annotation_label=0,
         feat_layers=['Conv2d_5_pointwise', 'Conv2d_8_pointwise', 'Conv2d_11_pointwise', 'Conv2d_13_pointwise'],
         feat_shapes=[(55, 55), (28, 28), (28, 28), (14, 14)],
-        # feat_layers=['block7', 'block8', 'block9', 'block10', 'block11'],
-        # feat_shapes=[(19, 19), (10, 10), (5, 5), (3, 3), (1, 1)],
         anchor_size_bounds=[0.01, 0.4],
-        # anchor_size_bounds=[0.20, 0.90],
-        # anchor_sizes=[(20., 10.),
-        #               (40., 20.),
-        #               (80., 85.),
-        #               (160., 165.)],
-        # anchor_sizes=[(20., 10.),
-        #             (40., 20.),
-        #             (32., 35.),
-        #             (65., 70.)],
-        # anchor_sizes=[(8., 18.),
-        #             (16., 34.),
-        #             (28., 52.),
-        #             (36., 70.)],
         anchor_sizes=[(10., 16.),
                     (18., 30.),
                     (28., 52.),
                     (36., 70.)],
 
-        # anchor_sizes=[(30., 60.),
-        #               (60., 111.),
-        #               (111., 162.),
-        #               (162., 213.),
-        #               (213., 264.),
-        #               (264., 315.)],
         anchor_ratios=[[1.2, 1.4, 1.6, 1.8],
                        [1.1, 1.3, 1.5, 1.7],
                        [1.5, 2.0, 2.5, 3.0],
@@ -530,7 +509,6 @@ def mobilenet_ssd_traffic_net(inputs,
                                               min_depth=min_depth,
                                               depth_multiplier=depth_multiplier,
                                               conv_defs=conv_defs)
-            # print (end_points)
             # Prediction and localisations layers.
             predictions = []
             logits = []
@@ -677,10 +655,6 @@ def ssd_anchor_one_layer(img_shape,
     y, x = np.mgrid[0:feat_shape[0], 0:feat_shape[1]]
     y = (y.astype(dtype) + offset) / feat_shape[0]
     x = (x.astype(dtype) + offset) / feat_shape[1]
-    # Weird SSD-Caffe computation using steps values...
-    # y, x = np.mgrid[0:feat_shape[0], 0:feat_shape[1]]
-    # y = (y.astype(dtype) + offset) * step / img_shape[0]
-    # x = (x.astype(dtype) + offset) * step / img_shape[1]
 
     # Expand dims to support easy broadcasting.
     y = np.expand_dims(y, axis=-1)
@@ -704,14 +678,6 @@ def ssd_anchor_one_layer(img_shape,
     for i, r in enumerate(ratios):
         h[i+di] = sizes[0] / img_shape[0] * r
         w[i+di] = sizes[1] / img_shape[1] * r
-    # else:
-    #     h[0] = sizes[0] / img_shape[0]
-    #     w[0] = sizes[1] / img_shape[1]
-    #     di = 1
-    #
-    #     for i, r in enumerate(ratios):
-    #         h[i+di] = sizes[0] / img_shape[0] * r
-    #         w[i+di] = sizes[1] / img_shape[1] * r
 
     return y, x, h, w
 
@@ -772,14 +738,6 @@ def ssd_multibox_layer(inputs,
 
     # Location.
     num_loc_pred = num_anchors * 4
-    # net = slim.conv2d(net, 128, [3, 5], activation_fn=tf.nn.relu,
-    #                        scope='conv_features')
-
-    # net = slim.separable_conv2d(net, None, [3, 3], depth_multiplier=1, stride=1, rate=1, normalizer_fn=slim.batch_norm, scope='conv_features_dipthwise')
-    # net = slim.conv2d(net, 512, [1, 1], stride=1, normalizer_fn=slim.batch_norm, scope='conv_features_pointwise')
-
-    # loc_pred = slim.conv2d(net, num_loc_pred, [3, 3], activation_fn=None,
-    #                        scope='conv_loc')
 
     loc_pred = slim.separable_conv2d(net, None, [3, 3], depth_multiplier=1, stride=1, rate=1, normalizer_fn=slim.batch_norm, scope='conv_loc_dipthwise')
     loc_pred = slim.conv2d(loc_pred, num_loc_pred, [1, 1], stride=1, normalizer_fn=slim.batch_norm, activation_fn=None, scope='conv_loc_pointwise')
@@ -789,11 +747,9 @@ def ssd_multibox_layer(inputs,
     # Class prediction.
     num_cls_pred = num_anchors * num_classes
 
-    # cls_pred = slim.conv2d(net, num_cls_pred, [3, 3], activation_fn=None,
-    #                        scope='conv_cls')
     cls_pred = slim.separable_conv2d(net, None, [3, 3], depth_multiplier=1, stride=1, rate=1, normalizer_fn=slim.batch_norm, scope='conv_cls_dipthwise')
     cls_pred = slim.conv2d(cls_pred, num_cls_pred, [1, 1], stride=1, normalizer_fn=slim.batch_norm, activation_fn=None, scope='conv_cls_pointwise')
-    #cls_pred = custom_layers.channel_to_last(cls_pred)
+
     cls_pred = tf.reshape(cls_pred,
                           tensor_shape(cls_pred, 4)[:-1]+[num_anchors, num_classes])
 
@@ -804,88 +760,6 @@ def ssd_multibox_layer(inputs,
                           tensor_shape(obj_pred, 4)[:-1]+[num_anchors, 2])
     return cls_pred, loc_pred, obj_pred
 
-# =========================================================================== #
-# SSD loss function.
-# =========================================================================== #
-# def ssd_losses(logits, localisations,
-#                gclasses, glocalisations, gscores,
-#                match_threshold=0.5,
-#                negative_ratio=3.,
-#                alpha=1.,
-#                label_smoothing=0.,
-#                device='/cpu:0',
-#                scope=None):
-#     with tf.name_scope(scope, 'ssd_losses'):
-#         lshape = tfe.get_shape(logits[0], 5)
-#         num_classes = lshape[-1]
-#         batch_size = lshape[0]
-#
-#         # Flatten out all vectors!
-#         flogits = []
-#         fgclasses = []
-#         fgscores = []
-#         flocalisations = []
-#         fglocalisations = []
-#         for i in range(len(logits)):
-#             flogits.append(tf.reshape(logits[i], [-1, num_classes]))
-#             fgclasses.append(tf.reshape(gclasses[i], [-1]))
-#             fgscores.append(tf.reshape(gscores[i], [-1]))
-#             flocalisations.append(tf.reshape(localisations[i], [-1, 4]))
-#             fglocalisations.append(tf.reshape(glocalisations[i], [-1, 4]))
-#         # And concat the crap!
-#         logits = tf.concat(flogits, axis=0)
-#         gclasses = tf.concat(fgclasses, axis=0)
-#         gscores = tf.concat(fgscores, axis=0)
-#         localisations = tf.concat(flocalisations, axis=0)
-#         glocalisations = tf.concat(fglocalisations, axis=0)
-#         dtype = logits.dtype
-#
-#         # Compute positive matching mask...
-#         pmask = gscores > match_threshold
-#         fpmask = tf.cast(pmask, dtype)
-#         n_positives = tf.reduce_sum(fpmask)
-#
-#         # Hard negative mining...
-#         no_classes = tf.cast(pmask, tf.int32)
-#         predictions = slim.softmax(logits)
-#         nmask = tf.logical_and(tf.logical_not(pmask),
-#                                gscores > -0.5)
-#         fnmask = tf.cast(nmask, dtype)
-#         nvalues = tf.where(nmask,
-#                            predictions[:, 0],
-#                            1. - fnmask)
-#         nvalues_flat = tf.reshape(nvalues, [-1])
-#         # Number of negative entries to select.
-#         max_neg_entries = tf.cast(tf.reduce_sum(fnmask), tf.int32)
-#         n_neg = tf.cast(negative_ratio * n_positives, tf.int32) + batch_size
-#         n_neg = tf.minimum(n_neg, max_neg_entries)
-#
-#         val, idxes = tf.nn.top_k(-nvalues_flat, k=n_neg)
-#         max_hard_pred = -val[-1]
-#         # Final negative mask.
-#         nmask = tf.logical_and(nmask, nvalues < max_hard_pred)
-#         fnmask = tf.cast(nmask, dtype)
-#
-#         # Add cross-entropy loss.
-#         with tf.name_scope('cross_entropy_pos'):
-#             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
-#                                                                   labels=gclasses)
-#             loss = tf.div(tf.reduce_sum(loss * fpmask), batch_size, name='value')
-#             tf.losses.add_loss(loss)
-#
-#         with tf.name_scope('cross_entropy_neg'):
-#             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
-#                                                                   labels=no_classes)
-#             loss = tf.div(tf.reduce_sum(loss * fnmask), batch_size, name='value')
-#             tf.losses.add_loss(loss)
-#
-#         # Add localization loss: smooth L1, L2, ...
-#         with tf.name_scope('localization'):
-#             # Weights Tensor: positive mask + random negative.
-#             weights = tf.expand_dims(alpha * fpmask, axis=-1)
-#             loss = custom_layers.abs_smooth(localisations - glocalisations)
-#             loss = tf.div(tf.reduce_sum(loss * weights), batch_size, name='value')
-#             tf.losses.add_loss(loss)
 
 def ssd_losses(logits, logits_obj, localisations,
                gclasses, glocalisations, gscores,

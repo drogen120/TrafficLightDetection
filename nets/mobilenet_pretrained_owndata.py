@@ -157,33 +157,12 @@ class Mobilenet_SSD_Traffic(object):
         no_annotation_label=0,
         feat_layers=['Conv2d_5_pointwise', 'Conv2d_8_pointwise', 'Conv2d_11_pointwise', 'Conv2d_13_pointwise'],
         feat_shapes=[(55, 55), (28, 28), (28, 28), (14, 14)],
-        # feat_layers=['block7', 'block8', 'block9', 'block10', 'block11'],
-        # feat_shapes=[(19, 19), (10, 10), (5, 5), (3, 3), (1, 1)],
         anchor_size_bounds=[0.01, 0.4],
-        # anchor_size_bounds=[0.20, 0.90],
-        # anchor_sizes=[(20., 10.),
-        #               (40., 20.),
-        #               (80., 85.),
-        #               (160., 165.)],
-        # anchor_sizes=[(20., 10.),
-        #             (40., 20.),
-        #             (32., 35.),
-        #             (65., 70.)],
-        # anchor_sizes=[(12., 30.),
-        #             (22., 46.),
-        #             (28., 52.),
-        #             (36., 70.)],
         anchor_sizes=[(10., 18.),
                     (18., 32.),
                     (28., 52.),
                     (36., 70.)],
 
-        # anchor_sizes=[(30., 60.),
-        #               (60., 111.),
-        #               (111., 162.),
-        #               (162., 213.),
-        #               (213., 264.),
-        #               (264., 315.)],
         anchor_ratios=[[1.2, 1.4, 1.6, 1.8],
                        [1.1, 1.3, 1.5, 1.7],
                        [1.5, 2.0, 2.5, 3.0],
@@ -538,7 +517,6 @@ def mobilenet_ssd_traffic_net(inputs,
                                               min_depth=min_depth,
                                               depth_multiplier=depth_multiplier,
                                               conv_defs=conv_defs)
-            # print (end_points)
             # Prediction and localisations layers.
             predictions = []
             logits = []
@@ -681,10 +659,6 @@ def ssd_anchor_one_layer(img_shape,
     y, x = np.mgrid[0:feat_shape[0], 0:feat_shape[1]]
     y = (y.astype(dtype) + offset) / feat_shape[0]
     x = (x.astype(dtype) + offset) / feat_shape[1]
-    # Weird SSD-Caffe computation using steps values...
-    # y, x = np.mgrid[0:feat_shape[0], 0:feat_shape[1]]
-    # y = (y.astype(dtype) + offset) * step / img_shape[0]
-    # x = (x.astype(dtype) + offset) * step / img_shape[1]
 
     # Expand dims to support easy broadcasting.
     y = np.expand_dims(y, axis=-1)
@@ -708,14 +682,6 @@ def ssd_anchor_one_layer(img_shape,
     for i, r in enumerate(ratios):
         h[i+di] = sizes[0] / img_shape[0] * r
         w[i+di] = sizes[1] / img_shape[1] * r
-    # else:
-    #     h[0] = sizes[0] / img_shape[0]
-    #     w[0] = sizes[1] / img_shape[1]
-    #     di = 1
-    #
-    #     for i, r in enumerate(ratios):
-    #         h[i+di] = sizes[0] / img_shape[0] * r
-    #         w[i+di] = sizes[1] / img_shape[1] * r
 
     return y, x, h, w
 
@@ -776,14 +742,6 @@ def ssd_multibox_layer(inputs,
 
     # Location.
     num_loc_pred = num_anchors * 4
-    # net = slim.conv2d(net, 128, [3, 5], activation_fn=tf.nn.relu,
-    #                        scope='conv_features')
-
-    # net = slim.separable_conv2d(net, None, [3, 3], depth_multiplier=1, stride=1, rate=1, normalizer_fn=slim.batch_norm, scope='conv_features_dipthwise')
-    # net = slim.conv2d(net, 512, [1, 1], stride=1, normalizer_fn=slim.batch_norm, scope='conv_features_pointwise')
-
-    # loc_pred = slim.conv2d(net, num_loc_pred, [3, 3], activation_fn=None,
-    #                        scope='conv_loc')
 
     loc_pred = slim.separable_conv2d(net, None, [3, 3], depth_multiplier=1, stride=1, rate=1, normalizer_fn=slim.batch_norm, scope='conv_loc_dipthwise')
     loc_pred = slim.conv2d(loc_pred, num_loc_pred, [1, 1], stride=1, normalizer_fn=slim.batch_norm, activation_fn=None, scope='conv_loc_pointwise')

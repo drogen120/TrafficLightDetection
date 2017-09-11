@@ -249,9 +249,6 @@ def main(_):
             gt_features = tf.expand_dims(gt_features, -1)
             summaries.add(tf.summary.image("gt_map_%d" % f_i, tf.cast(gt_features, tf.float32)))
             f_i += 1
-            # for festures in gt_list:
-            #     summaries.add(tf.summary.image("gt_map_%d" % f_i, tf.cast(festures, tf.float32)))
-            #     f_i += 1
 
         arg_scope = ssd_net.arg_scope(weight_decay=FLAGS.weight_decay, data_format=DATA_FORMAT)
         with slim.arg_scope(arg_scope):
@@ -273,67 +270,6 @@ def main(_):
                        alpha=FLAGS.loss_alpha,
                        label_smoothing=FLAGS.label_smoothing)
 
-        # with tf.name_scope('kitti' + '_data_provider'):
-        #     provider_k = slim.dataset_data_provider.DatasetDataProvider(
-        #         dataset_kitti,
-        #         num_readers = FLAGS.num_readers,
-        #         common_queue_capacity = 20 * FLAGS.batch_size,
-        #         common_queue_min = 10 * FLAGS.batch_size,
-        #         shuffle = True
-        #     )
-        # [image_k, shape_k, glabels_k, gbboxes_k] = provider_k.get(['image', 'shape', 'object/label', 'object/bbox'])
-        #
-        # image_preprocessing_fn_k = preprocessing_factory.get_preprocessing('kitti', is_training=True)
-        # image_k, glabels_k, gbboxes_k = \
-        #     image_preprocessing_fn_k(image_k, glabels_k, gbboxes_k, out_shape = ssd_shape, data_format = DATA_FORMAT)
-        #
-        # gclasses_k, glocalisations_k, gscores_k = \
-        #     ssd_net.bboxes_encode(glabels_k, gbboxes_k, ssd_anchors)
-        # #batch_shape = [1] + [len(ssd_anchors)] * 3
-        #
-        # r_k = tf.train.batch(
-        #     tf_utils.reshape_list([image_k, gclasses_k, glocalisations_k, gscores_k]),
-        #     batch_size=FLAGS.batch_size,
-        #     num_threads=FLAGS.num_preprocessing_threads,
-        #     capacity= 5 * FLAGS.batch_size
-        # )
-        #
-        # b_image_k, b_gclasses_k, b_glocalisations_k, b_gscores_k = \
-        #     tf_utils.reshape_list(r_k, batch_shape)
-        #
-        # summaries.add(tf.summary.image("k_imgs", tf.cast(b_image_k, tf.float32)))
-        #
-        # f_i = 0
-        # for gt_map in b_gscores_k:
-        #     gt_features = tf.reduce_max(gt_map, axis=3)
-        #     gt_features = tf.expand_dims(gt_features, -1)
-        #     summaries.add(tf.summary.image("k_gt_map_%d" % f_i, tf.cast(gt_features, tf.float32)))
-        #     f_i += 1
-        #     # for festures in gt_list:
-        #     #     summaries.add(tf.summary.image("gt_map_%d" % f_i, tf.cast(festures, tf.float32)))
-        #     #     f_i += 1
-        #
-        # arg_scope = ssd_net.arg_scope(weight_decay=FLAGS.weight_decay, data_format=DATA_FORMAT)
-        # with slim.arg_scope(arg_scope):
-        #     predictions_k, localisations_k, logits_k, end_points_k = \
-        #         ssd_net.net(b_image_k, is_training=True, reuse=True)
-        #
-        # f_i = 0
-        # for predict_map in predictions_k:
-        #     predict_map = predict_map[:, :, :, :, 1:]
-        #     predict_map = tf.reduce_max(predict_map, axis=4)
-        #     predict_map = tf.reduce_max(predict_map, axis=3)
-        #     predict_map = tf.expand_dims(predict_map, -1)
-        #     summaries.add(tf.summary.image("k_predicte_map_%d" % f_i, tf.cast(predict_map, tf.float32)))
-        #     f_i += 1
-        #
-        # ssd_net.losses(logits_k, localisations_k, b_gclasses_k, b_glocalisations_k, b_gscores_k, 2,
-        #                match_threshold=FLAGS.match_threshold,
-        #                negative_ratio=FLAGS.negative_ratio,
-        #                alpha=FLAGS.loss_alpha,
-        #                label_smoothing=FLAGS.label_smoothing)
-
-
 
         #total_loss = slim.losses.get_total_loss()
         total_loss = tf.losses.get_total_loss()
@@ -350,9 +286,6 @@ def main(_):
 
         learning_rate = tf_utils.configure_learning_rate(FLAGS, dataset.num_samples, global_step)
         optimizer = tf_utils.configure_optimizer(FLAGS, learning_rate)
-        # optimizer = tf.train.AdamOptimizer(learning_rate, beta1=FLAGS.adam_beta1,
-        #                                    beta2=FLAGS.adam_beta2, epsilon=FLAGS.opt_epsilon)
-        #optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         summaries.add(tf.summary.scalar('learning_rate', learning_rate))
 
         extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -370,8 +303,6 @@ def main(_):
         config = tf.ConfigProto(log_device_placement=False,
                                 gpu_options = gpu_options)
 
-        #variables_to_exclude = slim.get_variables_by_suffix("Adam")
-
         variables_to_restore = slim.get_variables_to_restore(exclude=["MobilenetV1/Logits","MobilenetV1/Box","global_step"])
 
         restorer = tf.train.Saver(variables_to_restore)
@@ -382,9 +313,6 @@ def main(_):
                                pad_step_number=False)
         sess.run(tf.global_variables_initializer())
         restorer.restore(sess, ckpt_filename)
-
-        # if ckpt and ckpt.model_checkpoint_path:
-        #     saver.restore(sess, ckpt.model_checkpoint_path)
 
         i = 0
         with slim.queues.QueueRunners(sess):
@@ -400,25 +328,6 @@ def main(_):
                     saver.save(sess, "./logs/",global_step=global_step_str)
 
                 i += 1
-
-        # slim.learning.train(
-        #     train_op,
-        #     logdir=FLAGS.train_dir,
-        #     init_fn=tf_utils.get_init_fn(FLAGS),
-        #     #summary_op = summary_op,
-        #     number_of_steps = FLAGS.max_number_of_steps,
-        #     log_every_n_steps = FLAGS.log_every_n_steps,
-        #     save_summaries_secs=FLAGS.save_summaries_secs,
-        #     saver = saver,
-        #     save_interval_secs = FLAGS.save_interval_secs,
-        #     session_config = config,
-        #     sync_optimizer=None
-        # )
-
-
-
-
-
 
 if __name__ == '__main__':
     tf.app.run()
