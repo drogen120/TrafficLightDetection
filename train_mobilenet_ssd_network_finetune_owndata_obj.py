@@ -194,7 +194,7 @@ def main(_):
         global_step = slim.create_global_step()
         # ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs/checkpoint'))
         #os.path.dirname('./logs/')
-        ckpt_filename = os.path.dirname('./logs_obj/') + '/mobilenet_v1_1.0_224.ckpt'
+        ckpt_filename = os.path.dirname('./logs_obj_lyj/') + '/mobilenet_v1_1.0_224.ckpt'
         sess = tf.InteractiveSession()
 
         # Select the dataset.
@@ -374,7 +374,7 @@ def main(_):
             )
 
         summary_op = tf.summary.merge(list(summaries), name='summary_op')
-        train_writer = tf.summary.FileWriter('./logs_obj/', sess.graph)
+        train_writer = tf.summary.FileWriter('./logs_obj_lyj/', sess.graph)
 
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=FLAGS.gpu_memory_fraction)
         config = tf.ConfigProto(log_device_placement=False,
@@ -407,7 +407,7 @@ def main(_):
                     train_writer.add_summary(summary_str, global_step_str)
                 if i % 100 == 0:
                     global_step_str = global_step.eval()
-                    saver.save(sess, "./logs_obj/",global_step=global_step_str)
+                    saver.save(sess, "./logs_obj_lyj/",global_step=global_step_str)
 
                 i += 1
 

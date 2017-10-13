@@ -16,7 +16,7 @@ sys.path.append('./')
 
 from nets import ssd_vgg, ssd_common, np_methods
 from nets import mobilenet_ssd_traffic
-from nets import mobilenet_pretrained_owndata
+from nets import mobilenet_pretrained_owndata_obj
 from preprocessing import ssd_vgg_preprocessing
 from notebooks import visualization
 
@@ -26,7 +26,7 @@ config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
 isess = tf.InteractiveSession(config=config)
 
 # Input placeholder.
-net_shape = (448, 448)
+net_shape = (440, 440)
 data_format = 'NHWC'
 img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
 # Evaluation pre-processing: resize to SSD net shape.
@@ -40,9 +40,9 @@ image_4d = tf.expand_dims(image_pre, 0)
 # with slim.arg_scope(ssd_net.arg_scope(data_format=data_format, is_training=False)):
 #     predictions, localisations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
 reuse = True if 'MobilenetV1' in locals() else None
-ssd_net = mobilenet_pretrained_owndata.Mobilenet_SSD_Traffic()
+ssd_net = mobilenet_pretrained_owndata_obj.Mobilenet_SSD_Traffic()
 with slim.arg_scope(ssd_net.arg_scope(data_format=data_format, is_training=False)):
-    predictions, localisations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
+    predictions, localisations, _, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
     summaries = set(tf.get_collection(tf.GraphKeys.SUMMARIES))
     summaries.add(tf.summary.image("Image", image_4d))
     f_i = 0
@@ -70,7 +70,7 @@ with slim.arg_scope(ssd_net.arg_scope(data_format=data_format, is_training=False
 # saver = tf.train.Saver()
 # saver.restore(isess, ckpt_filename)
 #ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs_scre/checkpoint'))
-ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs/checkpoint'))
+ckpt = tf.train.get_checkpoint_state(os.path.dirname('./logs_obj_lyj/checkpoint'))
 # if that checkpoint exists, restore from checkpoint
 saver = tf.train.Saver()
 summer_writer = tf.summary.FileWriter("./logs_test/", isess.graph)
@@ -89,7 +89,7 @@ def process_image(img, select_threshold=0.35, nms_threshold=.45, net_shape=(1024
     # Get classes and bboxes from the net outputs.
     rclasses, rscores, rbboxes = np_methods.ssd_bboxes_select(
             rpredictions, rlocalisations, ssd_anchors,
-            select_threshold=select_threshold, img_shape=net_shape, num_classes=10, decode=True)
+            select_threshold=select_threshold, img_shape=net_shape, num_classes=7, decode=True)
 
     rbboxes = np_methods.bboxes_clip(rbbox_img, rbboxes)
     rclasses, rscores, rbboxes = np_methods.bboxes_sort(rclasses, rscores, rbboxes, top_k=400)
@@ -116,7 +116,7 @@ def draw_results(img, rclasses, rscores, rbboxes, index):
     cv2.imwrite('./test_result/test_%d.jpg' % index, img)
 
 # path = '/home/gpu_server2/DataSet/dayTrain/dayTest/daySequence1/frames/'
-path = './test_img/'
+path = './val_images/201702071403/'
 image_names = sorted(os.listdir(path))
 print image_names
 index = 1
